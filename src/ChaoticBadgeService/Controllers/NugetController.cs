@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using ChaoticBadge;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.FileProviders;
 using Semver;
 using static ChaoticBadgeService.ChaoticBadgeServiceUtil;
 
@@ -11,12 +12,12 @@ namespace ChaoticBadgeService.Controllers
 {
     [Route("nuget")]
     [ApiController]
-    [ResponseCache(Duration = 10 * 60)]
-    public class NugetController : ControllerBase
+    [ResponseCache(Duration = 120 * 60)]
+    public class NugetController : BadgeServiceControllerBase
     {
         private readonly IHttpClientFactory _httpClientFactory;
 
-        public NugetController(IHttpClientFactory httpClientFactory)
+        public NugetController(IFileProvider fileProvider, IHttpClientFactory httpClientFactory) : base(fileProvider)
         {
             _httpClientFactory = httpClientFactory;
         }
@@ -25,9 +26,12 @@ namespace ChaoticBadgeService.Controllers
         public async Task<IActionResult> Retrieve(
             [FromRoute(Name = "id")] string id,
             [FromQuery(Name = "name")] string? customName = null,
-            [FromQuery(Name = "left_color")] string? customLeftColor = null,
-            [FromQuery(Name = "right_color")] string? customRightColor = null,
-            [FromQuery(Name = "stupid")] bool? stupid = null
+            [FromQuery(Name = "left-color")] string? customLeftColor = null,
+            [FromQuery(Name = "right-color")] string? customRightColor = null,
+            [FromQuery(Name = "stupid")] bool? stupid = null,
+            [FromQuery(Name = "icon")] string? icon = null,
+            [FromQuery(Name = "height")] int? height = null,
+            [FromQuery(Name = "font-size")] int? fontSize = null
         )
         {
             // TODO db for cache + filter
@@ -62,8 +66,13 @@ namespace ChaoticBadgeService.Controllers
             else
                 (ver, status) = (null, Status.NotFound);
 
-            return Badge(stupid ?? false ? StupidStyle : DefaultStyle, this, customName ?? id, status, ver,
-                customLeftColor: customLeftColor, customRightColor: customRightColor);
+            var style = stupid ?? false ? StupidStyle : DefaultStyle;
+            if (height > 4)
+                style = style with {Height = height.Value};
+            if (fontSize > 4)
+                style = style with {FontSizePts = fontSize.Value};
+            return Badge(style, this, customName ?? id, status, ver,
+                leftColor: customLeftColor, rightColor: customRightColor, icon: icon);
         }
 
         private static SemVersion? GetLatestVersion(byte[] jsonContent)

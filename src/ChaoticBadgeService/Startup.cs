@@ -9,9 +9,12 @@ namespace ChaoticBadgeService
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        private readonly IWebHostEnvironment _env;
+
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             Configuration = configuration;
+            _env = env;
         }
 
         public IConfiguration Configuration { get; }
@@ -25,6 +28,10 @@ namespace ChaoticBadgeService
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "ChaoticBadgeService", Version = "v1"});
             });
             services.AddHttpClient();
+
+            var physicalProvider = _env.ContentRootFileProvider;
+            services.AddSingleton(physicalProvider);
+            ChaoticBadgeServiceUtil.InitIcons(physicalProvider);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

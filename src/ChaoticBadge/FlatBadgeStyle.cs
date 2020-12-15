@@ -1,21 +1,15 @@
 using System.Collections.Generic;
 using System.Drawing;
-using System.Globalization;
 using Svg;
 using Svg.Transforms;
 
 namespace ChaoticBadge
 {
     /// <summary>
-    /// Represents a flat-styled badge.
+    /// Represents a flat badge style.
     /// </summary>
     public record FlatBadgeStyle : BadgeStyle
     {
-        /// <summary>
-        /// Default text color.
-        /// </summary>
-        public static readonly Color TextColor = Color.FromArgb(0xff, 0xff, 0xff);
-
         /// <summary>
         /// Default text shadow color.
         /// </summary>
@@ -87,11 +81,10 @@ namespace ChaoticBadge
         /// <param name="fontFamily">Font family.</param>
         /// <param name="fontSizePts">Font size in points.</param>
         /// <param name="height">Height.</param>
-        /// <param name="border">Border size.</param>
         /// <param name="typeMap">Mapping for <see cref="Status"/>.</param>
-        public FlatBadgeStyle(string fontFamily, int fontSizePts, int height, int border,
+        public FlatBadgeStyle(string fontFamily, int fontSizePts, int height,
             IReadOnlyDictionary<Status, (string status, Color statusColor)> typeMap)
-            : base(fontFamily, fontSizePts, height, border)
+            : base(fontFamily, fontSizePts, height)
         {
             TypeMap = typeMap;
         }
@@ -106,10 +99,8 @@ namespace ChaoticBadge
 
         /// <inheritdoc />
         public override SvgDocument CreateSvg(string name, Status status, string? statusText = null,
-            string? customLeftColor = null, string? customRightColor = null)
+            Color? leftColor = null, Color? rightColor = null, SvgDocument? icon = null)
         {
-            GetColors(customLeftColor, out var leftColor);
-            GetColors(customRightColor, out var rightColor);
             leftColor ??= DefaultLeftColor;
             bool resAvailable = TypeMap.TryGetValue(status, out var res);
             statusText ??= (resAvailable ? res : StandardMap[Status.Error]).Item1;
@@ -120,24 +111,61 @@ namespace ChaoticBadge
             group.FontFamily = FontFamily;
             group.FontSize = FontSizeSvgUnits;
             svg.Children.Add(group);
+            var leftBaseColor = IsLight(leftColor.Value) ? Color.Black : Color.White;
+            var rightBaseColor = IsLight(rightColor.Value) ? Color.Black : Color.White;
 
             #region Left
+
+            float iconTranslate = 0;
+            SvgGroup? iconGroup = null;
+            if (icon != null)
+            {
+                var bounds = icon.Bounds;
+                iconTranslate = bounds.Width;
+                iconGroup = new SvgGroup
+                {
+                    Fill = new SvgColourServer(leftBaseColor),
+                    Transforms = new SvgTransformCollection
+                    {
+                        new SvgTranslate(-bounds.Left, -bounds.Top + (Height - bounds.Height) / 2.0f)
+                    }
+                };
+                foreach (var e in icon.Children) iconGroup.Children.Add(e);
+            }
 
             float leftTextWidth =
                 new SvgText(name) {FontFamily = FontFamily, FontSize = FontSizeSvgUnits}
                     .Bounds
                     .Width;
             var labelTextElement =
-                new SvgText(name) {Fill = new SvgColourServer(TextColor), Y = {TextOffsetY}, X = {Border}};
+                new SvgText(name)
+                {
+                    Fill = new SvgColourServer(leftBaseColor),
+                    Y = {TextOffsetY},
+                    X = {Border},
+                    Transforms = new SvgTransformCollection {new SvgTranslate(iconTranslate)}
+                };
             var labelShadowTextElement =
-                new SvgText(name) {Fill = new SvgColourServer(TextShadowColor), Y = {TextShadowOffsetY}, X = {Border}};
+                new SvgText(name)
+                {
+                    Fill = new SvgColourServer(TextShadowColor),
+                    Y = {TextShadowOffsetY},
+                    X = {Border},
+                    Transforms = new SvgTransformCollection {new SvgTranslate(iconTranslate)}
+                };
             var leftBlock = new SvgRectangle
             {
-                Width = leftTextWidth + Border * 2, Height = Height, Fill = new SvgColourServer(leftColor.Value)
+                Width = iconTranslate + leftTextWidth + Border * 2,
+                Height = Height,
+                Fill = new SvgColourServer(leftColor.Value),
             };
-            group.Children.Add(leftBlock);
-            group.Children.Add(labelShadowTextElement);
-            group.Children.Add(labelTextElement);
+            var leftGroup = new SvgGroup();
+            group.Children.Add(leftGroup);
+            leftGroup.Children.Add(leftBlock);
+            if (iconGroup != null)
+                leftGroup.Children.Add(iconGroup);
+            leftGroup.Children.Add(labelShadowTextElement);
+            leftGroup.Children.Add(labelTextElement);
 
             #endregion
 
@@ -148,7 +176,7 @@ namespace ChaoticBadge
                     .Bounds.Width;
             var statusTextElement = new SvgText(statusText)
             {
-                Fill = new SvgColourServer(TextColor), Y = {TextOffsetY}, X = {Border}
+                Fill = new SvgColourServer(rightBaseColor), Y = {TextOffsetY}, X = {Border}
             };
             var statusShadowTextElement =
                 new SvgText(statusText)
@@ -170,20 +198,6 @@ namespace ChaoticBadge
             return svg;
         }
 
-        private static void GetColors(string? customColor, out Color? color)
-        {
-            if (customColor != null)
-                try
-                {
-                    color = Color.FromArgb(unchecked((int)0xff000000) | int.Parse(customColor, NumberStyles.HexNumber,
-                        CultureInfo.InvariantCulture));
-                }
-                catch
-                {
-                    color = null;
-                }
-            else
-                color = null;
-        }
+        private static bool IsLight(Color color) => color.R + color.G + color.B >= 128 * 3;
     }
 }

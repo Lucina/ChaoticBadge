@@ -21,4 +21,9 @@
     <ProjectReference Include="..\ChaoticBadge\ChaoticBadge.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="..\..\submodules\simple-icons\_data\simple-icons.json" Link="assets\%(FileName)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\submodules\simple-icons\icons\*.svg" Link="assets\%(FileName)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

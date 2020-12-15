@@ -1,3 +1,4 @@
+using System.Drawing;
 using Svg;
 
 namespace ChaoticBadge
@@ -25,7 +26,7 @@ namespace ChaoticBadge
         /// <summary>
         /// Border size.
         /// </summary>
-        public int Border { get; init; }
+        public int Border => (int)((Height - FontSizePts) / 2.0f);
 
         /// <summary>
         /// Y-offset of text baseline.
@@ -50,7 +51,6 @@ namespace ChaoticBadge
             FontFamily = "Verdana,Helvetica,sans-serif";
             FontSizePts = 9;
             Height = 20;
-            Border = 6;
         }
 
         /// <summary>
@@ -59,13 +59,11 @@ namespace ChaoticBadge
         /// <param name="fontFamily">Font family.</param>
         /// <param name="fontSizePts">Font size in points.</param>
         /// <param name="height">Height.</param>
-        /// <param name="border">Border size.</param>
-        protected BadgeStyle(string fontFamily, int fontSizePts, int height, int border)
+        protected BadgeStyle(string fontFamily, int fontSizePts, int height)
         {
             FontFamily = fontFamily;
             FontSizePts = fontSizePts;
             Height = height;
-            Border = border;
         }
 
         /// <summary>
@@ -74,11 +72,12 @@ namespace ChaoticBadge
         /// <param name="name">Badge name (left text).</param>
         /// <param name="status">Badge status.</param>
         /// <param name="statusText">Status text (right text).</param>
-        /// <param name="customLeftColor">Custom left-hand-side color.</param>
-        /// <param name="customRightColor">Custom right-hand-side color.</param>
+        /// <param name="leftColor">Custom left-hand-side color.</param>
+        /// <param name="rightColor">Custom right-hand-side color.</param>
+        /// <param name="icon">Custom icon.</param>
         /// <returns>Generated SVG.</returns>
         public abstract SvgDocument CreateSvg(string name, Status status, string? statusText = null,
-            string? customLeftColor = null, string? customRightColor = null);
+            Color? leftColor = null, Color? rightColor = null, SvgDocument? icon = null);
     }
 }
 
