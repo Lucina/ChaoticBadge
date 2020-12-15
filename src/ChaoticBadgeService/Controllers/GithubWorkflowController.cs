@@ -25,15 +25,13 @@ namespace ChaoticBadgeService.Controllers
             [FromRoute(Name = "owner")] string owner,
             [FromRoute(Name = "repo")] string repo,
             [FromRoute(Name = "workflow_file")] string workflowFile,
-            [FromQuery(Name = "custom_name")] string? customName = null,
-            [FromQuery(Name = "custom_left_color")]
-            string? customLeftColor = null,
-            [FromQuery(Name = "custom_right_color")]
-            string? customRightColor = null,
+            [FromQuery(Name = "name")] string? customName = null,
+            [FromQuery(Name = "left_color")] string? customLeftColor = null,
+            [FromQuery(Name = "right_color")] string? customRightColor = null,
             [FromQuery(Name = "stupid")] bool? stupid = null)
         {
             // TODO db for cache + filter
-            BadgeType resultKind;
+            Status resultKind;
             var c = _httpClientFactory.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Get,
                 $"https://api.github.com/repos/{owner}/{repo}/actions/workflows/{workflowFile}/runs?per_page=1");
@@ -55,17 +53,16 @@ namespace ChaoticBadgeService.Controllers
 
                 resultKind = success switch
                 {
-                    true => BadgeType.Passing,
-                    false => BadgeType.Failing,
-                    null => BadgeType.Unknown
+                    true => Status.Passing,
+                    false => Status.Failing,
+                    null => Status.Unknown
                 };
             }
             else
-                resultKind = BadgeType.NotFound;
+                resultKind = Status.NotFound;
 
-            return Badge(this, customName ?? "GitHub Workflow", resultKind,
-                customLeftColor: customLeftColor, customRightColor: customRightColor,
-                typeMasp: stupid ?? false ? Badges.StupidMap : null);
+            return Badge(stupid ?? false ? StupidStyle : DefaultStyle, this, customName ?? "GitHub Workflow",
+                resultKind, customLeftColor: customLeftColor, customRightColor: customRightColor);
         }
 
         private static bool? CheckSuccess(byte[] jsonContent)

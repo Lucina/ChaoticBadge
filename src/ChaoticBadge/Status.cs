@@ -1,9 +1,9 @@
 namespace ChaoticBadge
 {
     /// <summary>
-    /// Represents a badge type used to populate default background color and text.
+    /// Represents a badge status, potentially used to populate default background color and text.
     /// </summary>
-    public enum BadgeType
+    public enum Status
     {
         /// <summary>
         /// The process is passing.

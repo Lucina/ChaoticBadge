@@ -1,6 +1,4 @@
 #nullable enable
-using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Text;
 using System.Xml;
@@ -11,11 +9,13 @@ namespace ChaoticBadgeService
 {
     public static class ChaoticBadgeServiceUtil
     {
-        public static FileContentResult Badge(ControllerBase controller, string label, BadgeType badgeType,
-            string? status = null, string? customLeftColor = null, string? customRightColor = null,
-            IReadOnlyDictionary<BadgeType, (string, Color)>? typeMasp = null)
+        public static readonly FlatBadgeStyle DefaultStyle = FlatBadgeStyle.Default;
+        public static readonly FlatBadgeStyle StupidStyle = DefaultStyle with {TypeMap = FlatBadgeStyle.StupidMap};
+
+        public static FileContentResult Badge(BadgeStyle badgeStyle, ControllerBase controller, string label,
+            Status status, string? statusText = null, string? customLeftColor = null, string? customRightColor = null)
         {
-            var svg = Badges.CreateSvg(label, badgeType, status, customLeftColor, customRightColor, typeMasp);
+            var svg = badgeStyle.CreateSvg(label, status, statusText, customLeftColor, customRightColor);
             var ms = new MemoryStream();
             using (var writer = new XmlTextWriter(ms, Encoding.UTF8))
                 svg.Write(writer);

@@ -5,32 +5,27 @@ namespace ChaoticBadge
     /// <summary>
     /// Represents a set of common configuration values for badge styling.
     /// </summary>
-    public record BadgeStyle
+    public abstract record BadgeStyle
     {
-        /// <summary>
-        /// Singleton instance of default style.
-        /// </summary>
-        public static readonly BadgeStyle Default = new BadgeStyle();
-
         /// <summary>
         /// Font family.
         /// </summary>
-        public string FontFamily { get; }
+        public string FontFamily { get; init; }
 
         /// <summary>
         /// Font size in points.
         /// </summary>
-        public int FontSizePts { get; }
+        public int FontSizePts { get; init; }
 
         /// <summary>
         /// Height.
         /// </summary>
-        public int Height { get; }
+        public int Height { get; init; }
 
         /// <summary>
         /// Border size.
         /// </summary>
-        public int Border { get; }
+        public int Border { get; init; }
 
         /// <summary>
         /// Y-offset of text baseline.
@@ -50,7 +45,7 @@ namespace ChaoticBadge
         /// <summary>
         /// Creates an instance of <see cref="BadgeStyle"/> with the default style.
         /// </summary>
-        public BadgeStyle()
+        protected BadgeStyle()
         {
             FontFamily = "Verdana,Helvetica,sans-serif";
             FontSizePts = 9;
@@ -65,12 +60,31 @@ namespace ChaoticBadge
         /// <param name="fontSizePts">Font size in points.</param>
         /// <param name="height">Height.</param>
         /// <param name="border">Border size.</param>
-        public BadgeStyle(string fontFamily, int fontSizePts, int height, int border)
+        protected BadgeStyle(string fontFamily, int fontSizePts, int height, int border)
         {
             FontFamily = fontFamily;
             FontSizePts = fontSizePts;
             Height = height;
             Border = border;
         }
+
+        /// <summary>
+        /// Creates an SVG badge.
+        /// </summary>
+        /// <param name="name">Badge name (left text).</param>
+        /// <param name="status">Badge status.</param>
+        /// <param name="statusText">Status text (right text).</param>
+        /// <param name="customLeftColor">Custom left-hand-side color.</param>
+        /// <param name="customRightColor">Custom right-hand-side color.</param>
+        /// <returns>Generated SVG.</returns>
+        public abstract SvgDocument CreateSvg(string name, Status status, string? statusText = null,
+            string? customLeftColor = null, string? customRightColor = null);
+    }
+}
+
+namespace System.Runtime.CompilerServices
+{
+    internal static class IsExternalInit
+    {
     }
 }

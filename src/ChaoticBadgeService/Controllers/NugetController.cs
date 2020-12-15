@@ -24,17 +24,15 @@ namespace ChaoticBadgeService.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> Retrieve(
             [FromRoute(Name = "id")] string id,
-            [FromQuery(Name = "custom_name")] string? customName = null,
-            [FromQuery(Name = "custom_left_color")]
-            string? customLeftColor = null,
-            [FromQuery(Name = "custom_right_color")]
-            string? customRightColor = null,
+            [FromQuery(Name = "name")] string? customName = null,
+            [FromQuery(Name = "left_color")] string? customLeftColor = null,
+            [FromQuery(Name = "right_color")] string? customRightColor = null,
             [FromQuery(Name = "stupid")] bool? stupid = null
         )
         {
             // TODO db for cache + filter
             string? ver;
-            BadgeType badgeType;
+            Status status;
             var c = _httpClientFactory.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Get,
                 $"https://api.nuget.org/v3-flatcontainer/{id}/index.json");
@@ -48,25 +46,24 @@ namespace ChaoticBadgeService.Controllers
                     var latest = GetLatestVersion(responseBody);
                     if (latest != null)
                     {
-                        (ver, badgeType) = (latest.ToString(),
+                        (ver, status) = (latest.ToString(),
                             string.IsNullOrEmpty(latest.Prerelease)
-                                ? BadgeType.Release
-                                : BadgeType.PreRelease);
+                                ? Status.Release
+                                : Status.PreRelease);
                     }
                     else
-                        (ver, badgeType) = (null, BadgeType.Error);
+                        (ver, status) = (null, Status.Error);
                 }
                 catch
                 {
-                    (ver, badgeType) = (null, BadgeType.Error);
+                    (ver, status) = (null, Status.Error);
                 }
             }
             else
-                (ver, badgeType) = (null, BadgeType.NotFound);
+                (ver, status) = (null, Status.NotFound);
 
-            return Badge(this, customName ?? id, badgeType, ver,
-                customLeftColor: customLeftColor, customRightColor: customRightColor,
-                typeMasp: stupid ?? false ? Badges.StupidMap : null);
+            return Badge(stupid ?? false ? StupidStyle : DefaultStyle, this, customName ?? id, status, ver,
+                customLeftColor: customLeftColor, customRightColor: customRightColor);
         }
 
         private static SemVersion? GetLatestVersion(byte[] jsonContent)
