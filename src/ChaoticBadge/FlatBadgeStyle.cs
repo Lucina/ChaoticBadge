@@ -55,12 +55,12 @@ namespace ChaoticBadge
         public static readonly FlatBadgeStyle Default = new FlatBadgeStyle();
 
         /// <summary>
-        /// Left-hand-side color.
+        /// Left-hand-side background color.
         /// </summary>
         public Color LeftColor { get; init; }
 
         /// <summary>
-        /// Override right-hand-side color.
+        /// Override right-hand-side background color.
         /// </summary>
         public Color? RightColor { get; init; }
 
@@ -70,7 +70,7 @@ namespace ChaoticBadge
         public IReadOnlyDictionary<Status, Color> ColorMap { get; init; }
 
         /// <summary>
-        /// Creates an instance of <see cref="BadgeStyle"/> with the specified style.
+        /// Creates an instance of <see cref="FlatBadgeStyle"/> with the specified style.
         /// </summary>
         /// <param name="fontFamily">Font family.</param>
         /// <param name="fontSizePts">Font size in points.</param>
@@ -101,42 +101,46 @@ namespace ChaoticBadge
 
         /// <inheritdoc />
         protected override Color GetLeftColor(string name, Status status, string? statusText = null,
-            SvgGroup? icon = null)
-        {
-            return IsLight(LeftColor) ? Color.Black : Color.White;
-        }
+            SvgGroup? icon = null) =>
+            IsLight(LeftColor) ? Color.Black : Color.White;
 
         /// <inheritdoc />
         protected override Color GetRightColor(string name, Status status, string? statusText = null,
-            SvgGroup? icon = null)
-        {
-            var rightColor = RightColor ??
-                             (ColorMap.TryGetValue(status, out var inColor) ? inColor : StandardColorMap[status]);
-            return IsLight(rightColor) ? Color.Black : Color.White;
-        }
+            SvgGroup? icon = null) =>
+            IsLight(GetRightBackgroundColor(name, status, statusText, icon)) ? Color.Black : Color.White;
 
         /// <inheritdoc />
         protected override Color GetShadowColor(string name, Status status, string? statusText = null,
-            SvgGroup? icon = null)
-        {
-            return ShadowColor;
-        }
+            SvgGroup? icon = null) =>
+            ShadowColor;
 
         /// <inheritdoc />
         protected override SvgElement GetLeftBlock(float width, string name, Status status, string? statusText = null,
-            SvgGroup? icon = null)
-        {
-            return new SvgRectangle {Width = width, Height = Height, Fill = new SvgColourServer(LeftColor)};
-        }
+            SvgGroup? icon = null) =>
+            new SvgRectangle {Width = width, Height = Height, Fill = new SvgColourServer(LeftColor)};
 
         /// <inheritdoc />
         protected override SvgElement GetRightBlock(float width, string name, Status status, string? statusText = null,
-            SvgGroup? icon = null)
-        {
-            var rightColor = RightColor ??
-                             (ColorMap.TryGetValue(status, out var inColor) ? inColor : StandardColorMap[status]);
-            return new SvgRectangle {Width = width, Height = Height, Fill = new SvgColourServer(rightColor)};
-        }
+            SvgGroup? icon = null) =>
+            new SvgRectangle
+            {
+                Width = width,
+                Height = Height,
+                Fill = new SvgColourServer(GetRightBackgroundColor(name, status, statusText, icon))
+            };
+
+        /// <summary>
+        /// Gets right background color.
+        /// </summary>
+        /// <param name="name">Badge name (left text).</param>
+        /// <param name="status">Badge status.</param>
+        /// <param name="statusText">Status text (right text).</param>
+        /// <param name="icon">Custom icon.</param>
+        /// <returns>Right background color.</returns>
+        protected virtual Color GetRightBackgroundColor(string name, Status status, string? statusText = null,
+            SvgGroup? icon = null) =>
+            RightColor ??
+            (ColorMap.TryGetValue(status, out var inColor) ? inColor : StandardColorMap[status]);
 
         private static bool IsLight(Color color) => color.R + color.G + color.B >= (128 + 64) * 3;
     }

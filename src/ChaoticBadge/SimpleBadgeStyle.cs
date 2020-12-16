@@ -106,6 +106,7 @@ namespace ChaoticBadge
                 };
             float leftWidth = iconTranslate + leftTextWidth + Border * 2;
             var leftBlock = GetLeftBlock(leftWidth, name, status, statusText, iconGroup);
+            var leftMask = new SvgMask();
             var leftGroup = new SvgGroup();
             group.Children.Add(leftGroup);
             leftGroup.Children.Add(leftBlock);
