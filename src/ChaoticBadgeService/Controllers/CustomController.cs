@@ -25,16 +25,8 @@ namespace ChaoticBadgeService.Controllers
             [FromQuery(Name = "icon")] string? icon = null,
             [FromQuery(Name = "height")] int? height = null,
             [FromQuery(Name = "font-size")] int? fontSize = null
-
-        )
-        {
-            var style = stupid ?? false ? StupidStyle : DefaultStyle;
-            if (height > 4)
-                style = style with {Height = height.Value};
-            if (fontSize > 4)
-                style = style with {FontSizePts = fontSize.Value};
-            return Badge(style, this, name, Status.Passing, statusText: status,
+        ) =>
+            Badge(this, name, Status.Passing, stupid: stupid, height: height, fontSize: fontSize, statusText: status,
                 leftColor: customLeftColor, rightColor: customRightColor, icon: icon);
-        }
     }
 }

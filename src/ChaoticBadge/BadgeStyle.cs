@@ -1,4 +1,3 @@
-using System.Drawing;
 using Svg;
 
 namespace ChaoticBadge
@@ -72,12 +71,10 @@ namespace ChaoticBadge
         /// <param name="name">Badge name (left text).</param>
         /// <param name="status">Badge status.</param>
         /// <param name="statusText">Status text (right text).</param>
-        /// <param name="leftColor">Custom left-hand-side color.</param>
-        /// <param name="rightColor">Custom right-hand-side color.</param>
         /// <param name="icon">Custom icon.</param>
         /// <returns>Generated SVG.</returns>
         public abstract SvgDocument CreateSvg(string name, Status status, string? statusText = null,
-            Color? leftColor = null, Color? rightColor = null, SvgDocument? icon = null);
+            SvgDocument? icon = null);
     }
 }
 

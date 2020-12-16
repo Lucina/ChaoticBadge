@@ -67,13 +67,8 @@ namespace ChaoticBadgeService.Controllers
             else
                 resultKind = Status.NotFound;
 
-            var style = stupid ?? false ? StupidStyle : DefaultStyle;
-            if (height > 4)
-                style = style with {Height = height.Value};
-            if (fontSize > 4)
-                style = style with {FontSizePts = fontSize.Value};
-            return Badge(style, this, customName ?? "GitHub Workflow",
-                resultKind, leftColor: customLeftColor, rightColor: customRightColor, icon: icon);
+            return Badge(this, customName ?? "GitHub Workflow", resultKind, stupid: stupid, height: height,
+                fontSize: fontSize, leftColor: customLeftColor, rightColor: customRightColor, icon: icon);
         }
 
         private static bool? CheckSuccess(byte[] jsonContent)

@@ -66,13 +66,8 @@ namespace ChaoticBadgeService.Controllers
             else
                 (ver, status) = (null, Status.NotFound);
 
-            var style = stupid ?? false ? StupidStyle : DefaultStyle;
-            if (height > 4)
-                style = style with {Height = height.Value};
-            if (fontSize > 4)
-                style = style with {FontSizePts = fontSize.Value};
-            return Badge(style, this, customName ?? id, status, ver,
-                leftColor: customLeftColor, rightColor: customRightColor, icon: icon);
+            return Badge(this, customName ?? id, status, stupid: stupid, height: height, fontSize: fontSize,
+                statusText: ver, leftColor: customLeftColor, rightColor: customRightColor, icon: icon);
         }
 
         private static SemVersion? GetLatestVersion(byte[] jsonContent)

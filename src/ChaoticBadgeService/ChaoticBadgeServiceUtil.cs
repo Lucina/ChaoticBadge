@@ -21,18 +21,36 @@ namespace ChaoticBadgeService
         public static readonly FlatBadgeStyle StupidStyle = DefaultStyle with {TypeMap = FlatBadgeStyle.StupidMap};
         private static readonly Dictionary<string, (Color color, SvgDocument icon)?> _icons = new();
 
-        public static FileContentResult Badge(BadgeStyle badgeStyle, BadgeServiceControllerBase controller,
-            string label, Status status, string? statusText = null, string? leftColor = null, string? rightColor = null,
-            string? icon = null)
+        public static FileContentResult Badge(BadgeServiceControllerBase controller, string label, Status status,
+            bool? stupid = null, int? height = null, int? fontSize = null, string? statusText = null,
+            string? leftColor = null, string? rightColor = null, string? icon = null)
         {
+            BadgeStyle badgeStyle = stupid ?? false ? StupidStyle : DefaultStyle;
+
+            if (height > 4)
+                badgeStyle = badgeStyle with {Height = height.Value};
+            if (fontSize > 4)
+                badgeStyle = badgeStyle with {FontSizePts = fontSize.Value};
+
             GetColors(leftColor, out var customLeftColor);
             GetColors(rightColor, out var customRightColor);
+
             (Color color, SvgDocument icon)? iconValue = default;
             if (icon != null)
                 _icons.TryGetValue(icon, out iconValue);
             SvgDocument? iconIcon = iconValue?.icon;
             customLeftColor ??= iconValue?.color;
-            var svg = badgeStyle.CreateSvg(label, status, statusText, customLeftColor, customRightColor, iconIcon);
+
+            if (badgeStyle is FlatBadgeStyle flat)
+            {
+                if (customLeftColor != null)
+                    flat = flat with {LeftColor = customLeftColor.Value};
+                if (customRightColor != null)
+                    flat = flat with {RightColor = customRightColor};
+                badgeStyle = flat;
+            }
+
+            var svg = badgeStyle.CreateSvg(label, status, statusText, iconIcon);
             var ms = new MemoryStream();
             using (var writer = new XmlTextWriter(ms, Encoding.UTF8))
                 svg.Write(writer);
