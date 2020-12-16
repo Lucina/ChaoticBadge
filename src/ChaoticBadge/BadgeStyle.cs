@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Svg;
 
 namespace ChaoticBadge
@@ -7,6 +8,36 @@ namespace ChaoticBadge
     /// </summary>
     public abstract record BadgeStyle
     {
+        /// <summary>
+        /// Default status mapping for <see cref="Status"/>.
+        /// </summary>
+        public static readonly IReadOnlyDictionary<Status, string> StandardStatusMap =
+            new Dictionary<Status, string>
+            {
+                [Status.Passing] = "passing",
+                [Status.Failing] = "failing",
+                [Status.Unknown] = "unknown",
+                [Status.Release] = "release",
+                [Status.PreRelease] = "prerelease",
+                [Status.NotFound] = "not found",
+                [Status.Error] = "error"
+            };
+
+        /// <summary>
+        /// Stupid status mapping for <see cref="Status"/> with text emotes.
+        /// </summary>
+        public static readonly IReadOnlyDictionary<Status, string> StupidStatusMap =
+            new Dictionary<Status, string>
+            {
+                [Status.Passing] = "^.^",
+                [Status.Failing] = ">_<",
+                [Status.Unknown] = "@.@",
+                [Status.Release] = ";D",
+                [Status.PreRelease] = ":⦚",
+                [Status.NotFound] = "._.?",
+                [Status.Error] = "o.o?"
+            };
+
         /// <summary>
         /// Font family.
         /// </summary>
@@ -23,24 +54,9 @@ namespace ChaoticBadge
         public int Height { get; init; }
 
         /// <summary>
-        /// Border size.
+        /// Status mapping for <see cref="Status"/>.
         /// </summary>
-        public int Border => (int)((Height - FontSizePts) / 2.0f);
-
-        /// <summary>
-        /// Y-offset of text baseline.
-        /// </summary>
-        public int TextOffsetY => (int)(Height / 2.0f + FontSizePts / 2.0f);
-
-        /// <summary>
-        /// Y-offset of text shadow baseline.
-        /// </summary>
-        public int TextShadowOffsetY => TextOffsetY + 1;
-
-        /// <summary>
-        /// Font size in <see cref="SvgUnit"/>.
-        /// </summary>
-        public SvgUnit FontSizeSvgUnits => new(SvgUnitType.Point, FontSizePts);
+        public IReadOnlyDictionary<Status, string> StatusMap { get; init; }
 
         /// <summary>
         /// Creates an instance of <see cref="BadgeStyle"/> with the default style.
@@ -50,6 +66,7 @@ namespace ChaoticBadge
             FontFamily = "Verdana,Helvetica,sans-serif";
             FontSizePts = 9;
             Height = 20;
+            StatusMap = StandardStatusMap;
         }
 
         /// <summary>
@@ -58,11 +75,14 @@ namespace ChaoticBadge
         /// <param name="fontFamily">Font family.</param>
         /// <param name="fontSizePts">Font size in points.</param>
         /// <param name="height">Height.</param>
-        protected BadgeStyle(string fontFamily, int fontSizePts, int height)
+        /// <param name="statusMap">Status mapping for <see cref="Status"/>.</param>
+        protected BadgeStyle(string fontFamily, int fontSizePts, int height,
+            IReadOnlyDictionary<Status, string> statusMap)
         {
             FontFamily = fontFamily;
             FontSizePts = fontSizePts;
             Height = height;
+            StatusMap = statusMap;
         }
 
         /// <summary>

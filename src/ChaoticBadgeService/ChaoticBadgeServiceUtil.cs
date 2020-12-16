@@ -18,7 +18,7 @@ namespace ChaoticBadgeService
     public static class ChaoticBadgeServiceUtil
     {
         public static readonly FlatBadgeStyle DefaultStyle = FlatBadgeStyle.Default;
-        public static readonly FlatBadgeStyle StupidStyle = DefaultStyle with {TypeMap = FlatBadgeStyle.StupidMap};
+        public static readonly FlatBadgeStyle StupidStyle = DefaultStyle with {StatusMap = BadgeStyle.StupidStatusMap};
         private static readonly Dictionary<string, (Color color, SvgDocument icon)?> _icons = new();
 
         public static FileContentResult Badge(BadgeServiceControllerBase controller, string label, Status status,
